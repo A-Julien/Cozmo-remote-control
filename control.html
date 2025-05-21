@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contrôle du robot</title>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Votre fichier CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script> <!-- Bibliothèque Nipple.js -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+</head>
+<body>
+    <div id="connection-status">État de connexion : <span id="status">Déconnecté</span></div>
+    <button id="reconnect-button">Reconnecter</button>
+    <h1>Contrôle du robot</h1>
+    <!-- Zone du flux vidéo -->
+    <div id="main-container">
+        <div class="controlZone">
+            <!-- Croix directionnelle pour la tête et les bras -->
+            <div id="control-panel">
+                <div class="ctrlBtn">
+                    <button id="head-up">▲</button>
+                    <button id="head-center" >●</button>
+                    <button id="head-down">▼</button>
+                </div>
+
+                <div class="ctrlBtn" >
+                    <button  id="arm-auto-up">⏫</button>
+                    <button  id="arm-up">🔼</button>
+                    <button id="arm-center">●</button>
+                    <button id="arm-down">🔽</button>
+                    <button id="arm-auto-down">⏬</button>
+                </div>
+            </div>
+            <div class="addCtrl">
+                <button  id="park">🅿️</button>
+                <button  id="irLight">🔦</button>
+            </div>
+        </div>
+        <img id="video-stream" src="" alt="Flux vidéo du robot" style="width: 100%; max-width: 600px; display: block; margin-bottom: 20px;" />
+
+        <div class="controlZoneJoy">
+            <div id="joystick-zone"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const socket = io();
+
+        socket.on('connect', function() {
+            console.log('WebSocket Client Connected');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('WebSocket Client Disconnected');
+            document.getElementById('status').innerText = 'Déconnecté';
+        });
+
+        socket.on('connection_status', function(data) {
+            document.getElementById('status').innerText = data.status;
+        });
+
+        document.getElementById('reconnect-button').addEventListener('click', function() {
+            socket.emit('reconnect_robot');
+        });
+
+        // Configurer dynamiquement l'URL du flux vidéo
+        const videoStream = document.getElementById('video-stream');
+        const host = window.location.hostname; // Récupère l'IP ou le nom de domaine de l'hôte
+        videoStream.src = `http://${host}:5001/stream`;
+
+        // Initialiser Nipple.js pour le joystick
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick-zone'),
+            mode: 'semi',
+            color: 'cyan'
+        });
+
+        let lastCommand = null;
+
+        // Gestion des mouvements du joystick
+        joystick.on('move', (event, data) => {
+            if (data.direction) {
+                let cmd = null;
+                const angle = data.angle.degree;
+
+                if (angle >= 45 && angle < 135) {
+                    cmd = 'forward'; // Haut
+                } else if (angle >= 135 && angle < 225) {
+                    cmd = 'left'; // Gauche
+                } else if (angle >= 225 && angle < 315) {
+                    cmd = 'backward'; // Bas
+                } else {
+                    cmd = 'right'; // Droite
+                }
+
+                if (cmd !== lastCommand) {
+                    socket.emit('command', { cmd: cmd });
+                    lastCommand = cmd;
+                }
+            }
+        });
+
+        // Gestion de l'arrêt lorsque le joystick revient au centre
+        joystick.on('end', () => {
+            socket.emit('command', { cmd: 'stop' });
+            lastCommand = null;
+        });
+
+        // Gestion de la croix directionnelle pour la tête
+        document.getElementById('head-up').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'head_up' });
+        });
+        document.getElementById('head-down').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'head_down' });
+        });
+        document.getElementById('head-center').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'head_center' });
+        });
+
+        // Gestion de la croix directionnelle pour les bras
+        document.getElementById('arm-auto-up').addEventListener('click', () => {
+            console.log("arm-up")
+            socket.emit('command', { cmd: 'lift_auto_up' });
+        });
+        document.getElementById('arm-up').addEventListener('click', () => {
+            console.log("arm-up")
+            socket.emit('command', { cmd: 'lift_up' });
+        });
+        document.getElementById('arm-down').addEventListener('click', () => {
+            console.log("arm-down")
+            socket.emit('command', { cmd: 'lift_down' });
+        });        
+        document.getElementById('arm-auto-down').addEventListener('click', () => {
+            console.log("arm-down")
+            socket.emit('command', { cmd: 'lift_auto_down' });
+        });
+        document.getElementById('arm-center').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'lift_center' });
+        });
+
+        document.getElementById('park').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'parking' });
+        });
+
+        document.getElementById('irLight').addEventListener('click', () => {
+            socket.emit('command', { cmd: 'irLight' });
+        });
+
+
+        document.addEventListener('dblclick', function (e) {
+            e.preventDefault(); // Empêche le comportement par défaut du double-clic
+        });
+
+        let keysPressed = {};
+
+        document.addEventListener('keydown', function(e) {
+            if (!keysPressed[e.key]) {
+                keysPressed[e.key] = true;
+
+                let cmd = determineCommand();
+                if (cmd) {
+                    console.log("Commande envoyée : " + cmd);
+                    socket.emit('command', { cmd: cmd });
+                }
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            if (keysPressed[e.key]) {
+                delete keysPressed[e.key];
+
+                let cmd = determineCommand(); // Recalculer la commande après relâchement
+                if (cmd) {
+                    console.log("Commande envoyée : " + cmd);
+                    socket.emit('command', { cmd: cmd });
+                } else {
+                    console.log("Commande envoyée : stop");
+                    socket.emit('command', { cmd: 'stop' });
+                }
+            }
+        });
+
+        function determineCommand() {
+            // Déterminer la commande en fonction des touches appuyées
+            if (keysPressed['ArrowUp'] && keysPressed['ArrowLeft']) {
+                return 'forward_left';
+            } else if (keysPressed['ArrowUp'] && keysPressed['ArrowRight']) {
+                return 'forward_right';
+            } else if (keysPressed['ArrowDown'] && keysPressed['ArrowLeft']) {
+                return 'backward_left';
+            } else if (keysPressed['ArrowDown'] && keysPressed['ArrowRight']) {
+                return 'backward_right';
+            } else if (keysPressed['ArrowUp']) {
+                return 'forward';
+            } else if (keysPressed['ArrowDown']) {
+                return 'backward';
+            } else if (keysPressed['ArrowLeft']) {
+                return 'left';
+            } else if (keysPressed['ArrowRight']) {
+                return 'right';
+            } else if (keysPressed['a']) {
+                return 'head_up';
+            } else if (keysPressed['q']) {
+                return 'head_down';
+            } else if (keysPressed['z']) {
+                return 'lift_up';
+            } else if (keysPressed['s']) {
+                return 'lift_down';
+            } else if (keysPressed['l']) {
+                return 'irLight';
+            } else if (keysPressed['p']) {
+                return 'parking';
+            }
+            return null;
+        }
+
+
+
+
+    </script>
+</body>
+</html>

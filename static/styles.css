@@ -1,0 +1,215 @@
+/* Corps de la page */
+body {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #00ffcc;
+    margin: 0;
+    padding: 0;
+    /*display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;*/
+    height: 100vh; /* Prend 100% de la hauteur de l'écran */
+    overflow: hidden; /* Empêche le défilement */
+}
+
+/* Titre principal */
+h1 {
+    font-size: 5vh;
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    margin: 10px 0;
+    animation: glow 1.5s infinite alternate;
+    text-align: center;
+    transition: opacity 0.3s ease;
+    margin-top: 0;
+}
+
+/* Masque le titre en mode portrait */
+h1.hidden {
+    opacity: 0;        /* Titre invisible */
+    visibility: hidden; /* Masqué pour les interactions */
+}
+
+/* Conteneur principal */
+#main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80%; /* Prend 80% de la hauteur de la page */
+    box-sizing: border-box;
+}
+
+/* Image du flux vidéo */
+#video-stream {
+    flex: 1;
+    max-height: 100%; /* L'image s'ajuste à l'espace disponible */
+    object-fit: contain; /* Maintient le ratio d'aspect */
+    border: 2px solid #00ffcc;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #00ffcc;
+    margin: 0 20px; /* Espacement entre l'image et les contrôles */
+}
+
+
+/* Texte explicatif */
+p {
+    font-size: 1.2rem;
+    color: #b0e0e6;
+    margin-bottom: 20px;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+/* Image du flux vidéo */
+img {
+    border: 2px solid #00ffcc;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #00ffcc;
+    animation: pulse 2s infinite alternate;
+    max-width: 90%;
+    margin-bottom: 20px;
+}
+
+/* Zone du joystick */
+/*#joystick-zone {
+    width: 200px;
+    height: 200px;
+    border: 2px solid #00ffcc;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #00ffcc;
+    position: relative; /* Important pour centrer correctement le contenu *
+    display: flex; /* Centrage du contenu *
+    justify-content: center;
+    align-items: center;
+    margin: 0 20px; /* Espacement avec les autres éléments *
+}*/
+
+
+#park {
+    align-self: start;
+}
+
+/* Zone pour le joystick */
+#joystick-zone {
+    width: 18vw;
+    height: 18vw;
+    border: 2px solid #00ffcc;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #00ffcc;
+    display: flex; /* Centrage du contenu */
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+/* Croix directionnelle */
+#control-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 60%;
+    width: 100%;
+}
+
+.addCtrl {
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+/* Zone des contrôles */
+.controlZone {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 15%; /* Chaque zone occupe 15% de la largeur */
+    height: 100%; /* S'étend sur toute la hauteur disponible */
+    /*width: 100%;
+    height: auto;
+    margin: 20px 0;*/
+}
+
+.controlZoneJoy{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 20%; /* Chaque zone occupe 15% de la largeur */
+    height: 100%; /* S'étend sur toute la hauteur disponible */
+}
+
+.ctrlBtn button{
+    margin-top: 0.5em;
+
+    background: #203a43;
+    border: 2px solid #00ffcc;
+    border-radius: 5px;
+    color: #00ffcc;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    box-shadow: 0 0 10px #00ffcc;
+}
+
+.ctrlBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Animations */
+@keyframes glow {
+    0% {
+        text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    }
+    100% {
+        text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc, 0 0 40px #00ffcc;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 15px #00ffcc;
+    }
+    100% {
+        box-shadow: 0 0 25px #00ffcc;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    p {
+        font-size: 1rem;
+    }
+
+    #joystick-zone {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+
+
+@media only screen and (min-device-width: 480px) and (max-device-width: 640px),
+            screen and (max-device-height: 480px) and (min-device-height: 640px) {
+
+    h1 {
+      display: none;
+   }
+
+   #main-container {
+    height: 100% !important;
+    align-items: center !important;
+}
+}
