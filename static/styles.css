@@ -168,6 +168,26 @@ img {
     height: 100%;
 }
 
+
+.status-indicator {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-left: 10px;
+  vertical-align: middle;
+  background-color: gray; /* état inconnu */
+}
+
+.status-indicator.ok {
+  background-color: green;
+}
+
+.status-indicator.not-ok {
+  background-color: red;
+}
+
+
 /* Animations */
 @keyframes glow {
     0% {
@@ -213,3 +233,4 @@ img {
     align-items: center !important;
 }
 }
+

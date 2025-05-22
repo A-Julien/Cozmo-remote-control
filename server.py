@@ -33,6 +33,8 @@ irLightStatus = False
 cli_lock = Lock()
 cli = None
 
+cozmo_ssid = "Cozmo_05B7F8"
+cozmo_psk = "79-30156-95812903"
 #############################
 # Serveur Flask pour le flux vidéo
 #############################
@@ -169,7 +171,7 @@ def serve_static(path):
         return "File not found", 404
     return send_from_directory('static', path)
 
-@control_app.route('/control')
+@control_app.route('/')
 def control_page():
     return send_from_directory('.', 'control.html')  # Chemin vers le fichier HTML
 
@@ -218,6 +220,20 @@ def move_robot_sequence(cli):
 #############################
 # Programme principal
 #############################
+def check_and_reconnect_wifi(ssid, psk):
+    # Vérifie si l'appareil est connecté au Wi-Fi spécifié
+    result = os.popen(f"nmcli -t -f active,ssid dev wifi | grep '^yes:{ssid}$'").read()
+    if not result:
+        # Si non connecté, tente de se reconnecter
+        os.system(f"nmcli dev wifi connect '{ssid}' password '{psk}'")
+        result = os.popen(f"nmcli -t -f active,ssid dev wifi | grep '^yes:{ssid}$'").read()
+    return result
+
+@socketio.on('check_wifi')
+def handle_check_wifi():
+    status = check_and_reconnect_wifi(cozmo_ssid, cozmo_psk)
+    socketio.emit('wifi_status', {'status': status})
+
 def connect_to_cozmo():
     global cli
     while True:
@@ -226,7 +242,7 @@ def connect_to_cozmo():
             with pycozmo.connect() as c:
                 cli = c
                 print("Connexion réussie à Cozmo.")
-                socketio.emit('connection_status', {'status': 'Connecté'})
+                socketio.emit('connection_status', {'status': 'co'})
                 c.enable_camera(enable=True)
                 c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
 
@@ -238,7 +254,7 @@ def connect_to_cozmo():
                     time.sleep(0.1)
         except Exception as e:
             print(f"[ERREUR] Connexion ou exécution échouée : {e}")
-            socketio.emit('connection_status', {'status': 'Déconnecté'})
+            socketio.emit('connection_status', {'status': 'deco'})
             print("Nouvelle tentative dans 5 secondes...")
             time.sleep(5)
 

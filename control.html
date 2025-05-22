@@ -9,8 +9,17 @@
 
 </head>
 <body>
-    <div id="connection-status">État de connexion : <span id="status">Déconnecté</span></div>
-    <button id="reconnect-button">Reconnecter</button>
+    <!--<div id="connection-status">État de connexion : <span id="status">Déconnecté</span></div>
+    <button id="reconnect-button">Reconnecter</button>-->
+    <div id="connection-indicator">
+        robot co : <span id="status" class="status-indicator unknown"></span>
+        <button id="reconnect-button">Reconnecter</button>
+    </div>
+    <div id="wifi-indicator">
+        Wi-Fi : <span id="wifi-status-indicator" class="status-indicator unknown"></span>
+        <button id="check-wifi-btn">Vérifier Wi-Fi</button>
+    </div>
+
     <h1>Contrôle du robot</h1>
     <!-- Zone du flux vidéo -->
     <div id="main-container">
@@ -53,17 +62,44 @@
 
         socket.on('disconnect', function() {
             console.log('WebSocket Client Disconnected');
-            document.getElementById('status').innerText = 'Déconnecté';
         });
+
+        /*socket.on('connection_status', function(data) {
+            document.getElementById('status').innerText = data.status;
+        });*/
 
         socket.on('connection_status', function(data) {
-            document.getElementById('status').innerText = data.status;
+            console.log(data);
+            const indicator = document.getElementById('status');
+            if (data.status === 'co') {
+                indicator.className = 'status-indicator ok';
+            } else if (data.status === 'deco') {
+                indicator.className = 'status-indicator not-ok';
+            } else {
+                indicator.className = 'status-indicator';
+            }
         });
 
+         // Check Wi-Fi button click event
         document.getElementById('reconnect-button').addEventListener('click', function() {
             socket.emit('reconnect_robot');
         });
 
+        socket.on('wifi_status', function(data) {
+            const indicator = document.getElementById('wifi-status-indicator');
+            if (data.status === 'Connected') {
+                indicator.className = 'status-indicator ok';
+            } else if (data.status === 'Disconnected') {
+                indicator.className = 'status-indicator not-ok';
+            } else {
+                indicator.className = 'status-indicator';
+            }
+        });
+
+        // Check Wi-Fi button click event
+        document.getElementById('check-wifi-btn').addEventListener('click', function() {
+            socket.emit('check_wifi');
+        });
         // Configurer dynamiquement l'URL du flux vidéo
         const videoStream = document.getElementById('video-stream');
         const host = window.location.hostname; // Récupère l'IP ou le nom de domaine de l'hôte
@@ -216,8 +252,7 @@
         }
 
 
-
-
     </script>
+
 </body>
 </html>
