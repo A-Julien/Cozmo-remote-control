@@ -103,7 +103,8 @@
         // Configurer dynamiquement l'URL du flux vidéo
         const videoStream = document.getElementById('video-stream');
         const host = window.location.hostname; // Récupère l'IP ou le nom de domaine de l'hôte
-        videoStream.src = `http://${host}:5001/stream`;
+        const port = window.location.port;
+        videoStream.src = `http://${host}:${port}/stream`;
 
         // Initialiser Nipple.js pour le joystick
         const joystick = nipplejs.create({

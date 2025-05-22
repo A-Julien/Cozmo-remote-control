@@ -225,9 +225,13 @@ def check_and_reconnect_wifi(ssid, psk):
     result = os.popen(f"nmcli -t -f active,ssid dev wifi | grep '^yes:{ssid}$'").read()
     if not result:
         # Si non connecté, tente de se reconnecter
-        os.system(f"nmcli dev wifi connect '{ssid}' password '{psk}'")
+        #os.system(f"nmcli dev wifi connect '{ssid}' password '{psk}'")
+        os.system(f"nmcli dev wifi connect \"{ssid}\" password \"{psk}\" ")
         result = os.popen(f"nmcli -t -f active,ssid dev wifi | grep '^yes:{ssid}$'").read()
-    return result
+    if result:
+        return True
+    else:
+        return False
 
 @socketio.on('check_wifi')
 def handle_check_wifi():
