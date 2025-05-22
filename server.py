@@ -228,6 +228,7 @@ def check_and_reconnect_wifi(ssid, psk):
         #os.system(f"nmcli dev wifi connect '{ssid}' password '{psk}'")
         os.system(f"nmcli dev wifi connect \"{ssid}\" password \"{psk}\" ")
         result = os.popen(f"nmcli -t -f active,ssid dev wifi | grep '^yes:{ssid}$'").read()
+        print(result)
     if result:
         return True
     else:
@@ -235,7 +236,9 @@ def check_and_reconnect_wifi(ssid, psk):
 
 @socketio.on('check_wifi')
 def handle_check_wifi():
+    print("check wifi")
     status = check_and_reconnect_wifi(cozmo_ssid, cozmo_psk)
+    print(status)
     socketio.emit('wifi_status', {'status': status})
 
 def connect_to_cozmo():
