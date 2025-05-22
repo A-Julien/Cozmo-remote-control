@@ -87,9 +87,10 @@
 
         socket.on('wifi_status', function(data) {
             const indicator = document.getElementById('wifi-status-indicator');
-            if (data.status === 'True') {
+            console.log(data);
+            if (data.status === 'co') {
                 indicator.className = 'status-indicator ok';
-            } else if (data.status === 'False') {
+            } else if (data.status === 'deco') {
                 indicator.className = 'status-indicator not-ok';
             } else {
                 indicator.className = 'status-indicator';
