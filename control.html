@@ -87,9 +87,9 @@
 
         socket.on('wifi_status', function(data) {
             const indicator = document.getElementById('wifi-status-indicator');
-            if (data.status === 'Connected') {
+            if (data.status === 'True') {
                 indicator.className = 'status-indicator ok';
-            } else if (data.status === 'Disconnected') {
+            } else if (data.status === 'False') {
                 indicator.className = 'status-indicator not-ok';
             } else {
                 indicator.className = 'status-indicator';
@@ -252,7 +252,8 @@
             return null;
         }
 
-
+        socket.emit('reconnect_robot');
+        socket.emit('check_wifi');
     </script>
 
 </body>
