@@ -35,6 +35,7 @@ cli = None
 
 cozmo_ssid = "Cozmo_05B7F8"
 cozmo_psk = "79-30156-95812903"
+reco = False
 #############################
 # Serveur Flask pour le flux vidéo
 #############################
@@ -106,11 +107,13 @@ def drive(c, lwheel, rwheel):
 @socketio.on('reconnect_robot')
 def handle_reconnect_robot():
     global cli
+    global reco
+
     with cli_lock:
         if cli is not None:
             cli.disconnect()
         cli = None
-    reco_cozmo()
+    reco = True
 
 @socketio.on('command')
 def handle_command(data):
@@ -239,8 +242,7 @@ def handle_check_wifi():
     print(status)
     print("check wifi")
     socketio.emit('wifi_status', {'status': status})
-
-def reco_cozmo():
+"""def reco_cozmo():
     global cli
     with pycozmo.connect() as c:
         cli = c
@@ -251,15 +253,26 @@ def reco_cozmo():
 
         c.set_head_angle(current_head_angle)
         time.sleep(1)
-        set_lift_height(c, 52)
+        set_lift_height(c, 52)"""
 
 def connect_to_cozmo():
     global cli
+    global reco
     #while True:
     try:
         print("Tentative de connexion à Cozmo...")
-        reco_cozmo()
         while True:
+            if reco:
+                with pycozmo.connect() as c:
+                    cli = c
+                    print("Connexion réussie à Cozmo.")
+                    socketio.emit('connection_status', {'status': 'co'})
+                    c.enable_camera(enable=True)
+                    c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
+
+                    c.set_head_angle(current_head_angle)
+                    time.sleep(1)
+                    set_lift_height(c, 52)
             time.sleep(1)
     except Exception as e:
         print(f"[ERREUR] Connexion ou exécution échouée : {e}")
