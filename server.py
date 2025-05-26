@@ -110,7 +110,7 @@ def handle_reconnect_robot():
         if cli is not None:
             cli.disconnect()
         cli = None
-    connect_to_cozmo()
+    reco_cozmo()
 
 @socketio.on('command')
 def handle_command(data):
@@ -240,21 +240,27 @@ def handle_check_wifi():
     print("check wifi")
     socketio.emit('wifi_status', {'status': status})
 
+def reco_cozmo():
+    global cli
+    with pycozmo.connect() as c:
+        cli = c
+        print("Connexion réussie à Cozmo.")
+        socketio.emit('connection_status', {'status': 'co'})
+        c.enable_camera(enable=True)
+        c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
+
+        c.set_head_angle(current_head_angle)
+        time.sleep(1)
+        set_lift_height(c, 52)
+
 def connect_to_cozmo():
     global cli
+    #while True:
     try:
         print("Tentative de connexion à Cozmo...")
-        with pycozmo.connect() as c:
-            cli = c
-            print("Connexion réussie à Cozmo.")
-            socketio.emit('connection_status', {'status': 'co'})
-            c.enable_camera(enable=True)
-            c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
-
-            c.set_head_angle(current_head_angle)
+        reco_cozmo()
+        while True:
             time.sleep(1)
-            set_lift_height(c, 52)
-
     except Exception as e:
         print(f"[ERREUR] Connexion ou exécution échouée : {e}")
         socketio.emit('connection_status', {'status': 'deco'})
@@ -271,8 +277,8 @@ if __name__ == "__main__":
     control_thread.start()
 
     # Thread pour la connexion à Cozmo
-    #cozmo_thread = Thread(target=connect_to_cozmo, daemon=True)
-    #cozmo_thread.start()
+    cozmo_thread = Thread(target=connect_to_cozmo, daemon=True)
+    cozmo_thread.start()
 
     # Garder le programme principal actif
     try:
