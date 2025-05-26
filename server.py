@@ -263,16 +263,16 @@ def connect_to_cozmo():
         print("Tentative de connexion à Cozmo...")
         while True:
             if reco:
-                with pycozmo.connect() as c:
-                    cli = c
-                    print("Connexion réussie à Cozmo.")
-                    socketio.emit('connection_status', {'status': 'co'})
-                    c.enable_camera(enable=True)
-                    c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
+                reco = False
+                cli = pycozmo.connect()
+                print("Connexion réussie à Cozmo.")
+                socketio.emit('connection_status', {'status': 'co'})
+                cli.enable_camera(enable=True)
+                cli.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
 
-                    c.set_head_angle(current_head_angle)
-                    time.sleep(1)
-                    set_lift_height(c, 52)
+                cli.set_head_angle(current_head_angle)
+                time.sleep(1)
+                set_lift_height(cli, 52)
             time.sleep(1)
     except Exception as e:
         print(f"[ERREUR] Connexion ou exécution échouée : {e}")
