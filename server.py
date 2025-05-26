@@ -264,6 +264,7 @@ def connect_to_cozmo():
         while True:
             if reco:
                 with pycozmo.connect() as c:
+                    reco = False
                     cli = c
                     print("Connexion réussie à Cozmo.")
                     socketio.emit('connection_status', {'status': 'co'})
@@ -273,7 +274,7 @@ def connect_to_cozmo():
                     c.set_head_angle(current_head_angle)
                     time.sleep(1)
                     set_lift_height(c, 52)
-                    while reco:
+                    while not reco:
                         time.sleep(1)
             time.sleep(1)
     except Exception as e:
