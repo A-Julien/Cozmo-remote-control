@@ -242,27 +242,24 @@ def handle_check_wifi():
 
 def connect_to_cozmo():
     global cli
-    while True:
-        try:
-            print("Tentative de connexion à Cozmo...")
-            with pycozmo.connect() as c:
-                cli = c
-                print("Connexion réussie à Cozmo.")
-                socketio.emit('connection_status', {'status': 'co'})
-                c.enable_camera(enable=True)
-                c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
+    try:
+        print("Tentative de connexion à Cozmo...")
+        with pycozmo.connect() as c:
+            cli = c
+            print("Connexion réussie à Cozmo.")
+            socketio.emit('connection_status', {'status': 'co'})
+            c.enable_camera(enable=True)
+            c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
 
-                c.set_head_angle(current_head_angle)
-                time.sleep(1)
-                set_lift_height(c, 52)
+            c.set_head_angle(current_head_angle)
+            time.sleep(1)
+            set_lift_height(c, 52)
 
-                while True:
-                    time.sleep(0.1)
-        except Exception as e:
-            print(f"[ERREUR] Connexion ou exécution échouée : {e}")
-            socketio.emit('connection_status', {'status': 'deco'})
-            print("Nouvelle tentative dans 5 secondes...")
-            time.sleep(5)
+    except Exception as e:
+        print(f"[ERREUR] Connexion ou exécution échouée : {e}")
+        socketio.emit('connection_status', {'status': 'deco'})
+        print("Nouvelle tentative dans 5 secondes...")
+        time.sleep(5)
 
 if __name__ == "__main__":
     # Thread pour le flux vidéo
@@ -274,8 +271,8 @@ if __name__ == "__main__":
     control_thread.start()
 
     # Thread pour la connexion à Cozmo
-    cozmo_thread = Thread(target=connect_to_cozmo, daemon=True)
-    cozmo_thread.start()
+    #cozmo_thread = Thread(target=connect_to_cozmo, daemon=True)
+    #cozmo_thread.start()
 
     # Garder le programme principal actif
     try:
