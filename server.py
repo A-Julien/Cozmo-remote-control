@@ -255,7 +255,7 @@ def handle_check_wifi():
         time.sleep(1)
         set_lift_height(c, 52)"""
 
-def connect_to_cozmo():
+"""def connect_to_cozmo():
     global cli
     global reco
     #while True:
@@ -281,7 +281,37 @@ def connect_to_cozmo():
         print(f"[ERREUR] Connexion ou exécution échouée : {e}")
         socketio.emit('connection_status', {'status': 'deco'})
         print("Nouvelle tentative dans 5 secondes...")
-        time.sleep(5)
+        time.sleep(5)"""
+
+def connect_to_cozmo():
+    global cli, reco
+    print("Thread de connexion à Cozmo démarré.")
+    while True:
+        if reco:
+            try:
+                print("Tentative de connexion à Cozmo...")
+                with pycozmo.connect() as c:
+                    cli = c
+                    reco = False
+                    print("Connexion réussie à Cozmo.")
+                    socketio.emit('connection_status', {'status': 'co'})
+                    c.enable_camera(enable=True)
+                    c.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
+                    c.set_head_angle(current_head_angle)
+                    time.sleep(1)
+                    set_lift_height(c, 52)
+
+                    # Boucle de surveillance
+                    while not reco:
+                        time.sleep(1)
+
+            except Exception as e:
+                print(f"[ERREUR] Connexion échouée : {e}")
+                socketio.emit('connection_status', {'status': 'deco'})
+                time.sleep(5)
+        else:
+            time.sleep(2)
+
 
 if __name__ == "__main__":
     # Thread pour le flux vidéo
